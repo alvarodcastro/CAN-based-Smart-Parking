@@ -67,17 +67,20 @@ Key tunables: `window_size`, `frequency_threshold`, `anomaly_threshold`, and `se
 	- Targeted region transfer
 	- Imperceptible OCR manipulation
 
-- CAN bus attacks: see [attacks/CANbus](attacks/CANbus/README.md) for a Python CLI using `python-can` implementing:
+- CAN bus attacks: see [attacks/CANbus](attacks/CANbus/README.md) for a Python CLI using `python-can` full attack implementations. The attacks considered for our research are:
+
 	- Flood (DoS) with configurable ID/rate/payload
+
 	<img src="figures/DoS_AdversarialCAN_SecCPS_Arquitecture.drawio.png" alt="DoS Attack simulation in CAN bus" width="800">
 
 	- Sensor Data Injection
+
 	<img src="figures/SensorDataInjection_AdversarialCAN_SecCPS_Arquitecture.drawio.png" alt="Sensor data injection attack in CAN bus" width="800">
 
 	- Command spoofing attack
+	
 	<img src="figures/CommandSpoofing_AdversarialCAN_SecCPS_Arquitecture.drawio.png" alt="Command spoofing attack in CAN bus" width="800">
 
-All sent frames are logged for reproducibility.
 
 ## CAN Message Specification (Summary)
 
