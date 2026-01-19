@@ -71,6 +71,8 @@ We provide two complementary attack suites to stress the system and the IDS.
 - Targeted region transfer
 - Imperceptible OCR manipulation
 
+Technical report: [Adversarial_Machine_Learning_for_ANPR.pdf](attacks/adversarialANPR/Adversarial_Machine_Learning_for_ANPR.pdf) summarizes methodology, threat model, experiments, and reproduction details. See the folder guide at [attacks/adversarialANPR/README.md](attacks/adversarialANPR/README.md) for code, notebooks, and setup.
+
 ## CAN Message Summary
 
 Device-level formats are defined in [industrialNetwork/README.md](industrialNetwork/README.md). Example (temperature):
