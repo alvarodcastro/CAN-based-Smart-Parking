@@ -179,7 +179,7 @@ sqlite3 can_ids.db "SELECT datetime(timestamp,'unixepoch'), can_id, anomaly_type
 
 ## How to Cite
 
-If this repository contributes to your research, please cite the accompanying paper referenced in your manuscript. We will add BibTeX here once the final citation/DOI is public. In the meantime, you can reference this repository URL and the paper as listed in your bibliography.
+If this repository contributes to your research, please cite the accompanying paper referenced in your manuscript. We will add BibTeX here once the final citation/DOI is public. In the meantime, you can reference this repository URL.
 
 
 ## Ethics and Safe Use
