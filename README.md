@@ -44,7 +44,7 @@ High-level data path: Sensors/Actuators ⇄ CAN Bus ⇄ PIC32MZ Gateway ⇄ Host
 
 ## Threat Model
 The proposed threat model is shown in the next Figure. Attacker (1) refers to CAN-bus threats considered. Attacker (2) refers to ANPR threats considered.
-<img src="figures/Adversarial_SecCPS_Arquitecture.drawio.svg" alt="CAN-based Smart Parking CPS architecture" width="800">
+<img src="figures/Adversarial_SecCPS_Arquitecture.drawio.svg" alt="Threat Model for the proposed system" width="800">
 
 ## Software Components
 
@@ -69,9 +69,13 @@ Key tunables: `window_size`, `frequency_threshold`, `anomaly_threshold`, and `se
 
 - CAN bus attacks: see [attacks/CANbus](attacks/CANbus/README.md) for a Python CLI using `python-can` implementing:
 	- Flood (DoS) with configurable ID/rate/payload
-	- Fuzzing over ID/DLC/payload ranges
-	- Spoof injection for a target ID
-	- Replay from CSV/candump logs
+	<img src="figures/DoS_AdversarialCAN_SecCPS_Arquitecture.drawio.png" alt="DoS Attack simulation in CAN bus" width="800">
+
+	- Sensor Data Injection
+	<img src="figures/SensorDataInjection_AdversarialCAN_SecCPS_Arquitecture.drawio.png" alt="Sensor data injection attack in CAN bus" width="800">
+
+	- Command spoofing attack
+	<img src="figures/CommandSpoofing_AdversarialCAN_SecCPS_Arquitecture.drawio.png" alt="Command spoofing attack in CAN bus" width="800">
 
 All sent frames are logged for reproducibility.
 
