@@ -4,6 +4,11 @@ A  Cyber-Physical System (CPS) for smart parking built around a Controller Area 
 
 This repository consolidates embedded firmware (sensors/actuators), a PIC32MZ gateway, IDS logic, attack tooling, and test utilities to support experiments in detection performance, robustness, and end-to-end behavior.
 
+## Architecture Diagram
+The arquitecture diagram is as follows:
+
+<img src="figures/SecCPS_Arquitecture.drawio.svg" alt="CAN-based Smart Parking CPS architecture" width="800">
+
 ## Repository Structure
 
 - [industrialNetwork](industrialNetwork/README.md): Embedded sketches and host utilities for the CPS industrial network
@@ -37,6 +42,10 @@ High-level data path: Sensors/Actuators ⇄ CAN Bus ⇄ PIC32MZ Gateway ⇄ Host
 	- Linux: SocketCAN-compatible (e.g., USB-CAN) on `can0`/`vcan0`.
 	- Windows: Vendor adapters (Peak PCAN, Kvaser) supported via `python-can`.
 
+## Threat Model
+The proposed threat model is shown in the next Figure. Attacker (1) refers to CAN-bus threats considered. Attacker (2) refers to ANPR threats considered.
+<img src="figures/Adversarial_SecCPS_Arquitecture.drawio.svg" alt="CAN-based Smart Parking CPS architecture" width="800">
+
 ## Software Components
 
 ### Industrial Network & IDS
@@ -53,7 +62,7 @@ Key tunables: `window_size`, `frequency_threshold`, `anomaly_threshold`, and `se
 
 ### Attacks
 
-- ANPR adversarial (vision): see [attacks/adversarialANPR/README.md](attacks/adversarialANPR/README.md) and the notebook [adversarial_ANPR.ipynb](attacks/adversarialANPR/adversarial_ANPR.ipynb) for three attacks:
+- ANPR adversarial (vision): see [attacks/adversarialANPR/README.md](attacks/adversarialANPR/README.md) for full documentation on the three attacks implemented:
 	- Detection DoS via bounded perturbations
 	- Targeted region transfer
 	- Imperceptible OCR manipulation
