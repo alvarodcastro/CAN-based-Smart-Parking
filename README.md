@@ -1,111 +1,100 @@
 # CAN-based Smart Parking CPS
 
-A  Cyber-Physical System (CPS) for smart parking built around a Controller Area Network (CAN) connecting sensors and actuators, with a host-side CAN Intrusion Detection System (IDS), and two attack suites for security evaluation: image-space adversarial attacks against ANPR and CAN-bus attacks.
+Research-oriented Cyber-Physical System (CPS) for smart parking built on a Controller Area Network (CAN). The system integrates Arduino-based sensors/actuators, a PIC32MZ CAN gateway, a host-side CAN Intrusion Detection System (IDS), and two attack suites (vision-space adversarial ANPR and in-bus CAN attacks) to evaluate security and robustness end-to-end.
 
-This repository consolidates embedded firmware (sensors/actuators), a PIC32MZ gateway, IDS logic, attack tooling, and test utilities to support experiments in detection performance, robustness, and end-to-end behavior.
+— Designed for reproducible experiments, ablation, and benchmarking in academic/industrial research settings.
 
-## Architecture Diagram
-The arquitecture diagram is as follows:
+## Architecture
+
+The overall system architecture is shown below:
 
 <img src="figures/SecCPS_Arquitecture.drawio.svg" alt="CAN-based Smart Parking CPS architecture" width="800">
 
-## Repository Structure
-
-- [industrialNetwork](industrialNetwork/README.md): Embedded sketches and host utilities for the CPS industrial network
-	- Sensors/actuators (Arduino sketches):
-		- [ambient_transmitter](industrialNetwork/ambient_transmitter/ambient_transmitter.ino)
-		- [ultrasonic](industrialNetwork/ultrasonic/ultrasonic.ino)
-		- [servoMotor](industrialNetwork/servoMotor/servoMotor.ino)
-		- [transmitterCAN](industrialNetwork/transmitterCAN/transmitterCAN.ino)
-		- [recieverCAN](industrialNetwork/recieverCAN/recieverCAN.ino)
-	- Gateway: [PIC32MZ/original.c](industrialNetwork/PIC32MZ/original.c)
-	- CAN IDS: [NIDS_CAN/main.py](industrialNetwork/NIDS_CAN/main.py)
-- Attacks
-	- ANPR adversarial: [attacks/adversarialANPR](attacks/adversarialANPR/README.md)
-	- CAN bus attacks: [attacks/CANbus](attacks/CANbus/README.md)
-- Tests and utilities: [tests](tests/README.md)
-
-## System Overview
-
-The CPS consists of CAN-connected devices providing occupancy detection (ultrasonic), ambient sensing, and a barrier actuator (servo). A PIC32MZ gateway/bridge connects the CAN segment upstream. A host-side IDS observes CAN traffic to detect anomalies such as ID misuse, payload irregularities, and flooding. Two attack suites are provided to evaluate defenses:
-
-- Adversarial ANPR attacks: image-space perturbations to degrade plate detection/OCR in the perception pipeline.
-- CAN bus attacks: flooding, fuzzing, spoofing, and replay to probe CAN IDS detection.
-
 High-level data path: Sensors/Actuators ⇄ CAN Bus ⇄ PIC32MZ Gateway ⇄ Host (IDS, logging, analytics) and Video ⇄ ANPR ⇄ Attack evaluation.
 
-## Hardware & Interfaces
-
-- CAN transceivers/shields for Arduino-compatible boards (for the included sketches).
-- PIC32MZ-based gateway (see [industrialNetwork/PIC32MZ/original.c](industrialNetwork/PIC32MZ/original.c)).
-- Host CAN adapter:
-	- Linux: SocketCAN-compatible (e.g., USB-CAN) on `can0`/`vcan0`.
-	- Windows: Vendor adapters (Peak PCAN, Kvaser) supported via `python-can`.
-
 ## Threat Model
-The proposed threat model is shown in the next Figure. Attacker (1) refers to CAN-bus threats considered. Attacker (2) refers to ANPR threats considered.
+
+We evaluate two attacker surfaces: (1) in-bus CAN threats and (2) perception-layer ANPR threats. See the figure below.
+
 <img src="figures/Adversarial_SecCPS_Arquitecture.drawio.svg" alt="Threat Model for the proposed system" width="800">
 
-## Software Components
+## Components
 
-### Industrial Network & IDS
+- Industrial network (embedded + host utils): see [industrialNetwork](industrialNetwork/README.md)
+  - Sensors/actuators (Arduino sketches):
+    - [ambient_transmitter](industrialNetwork/ambient_transmitter/ambient_transmitter.ino)
+    - [ultrasonic](industrialNetwork/ultrasonic/ultrasonic.ino)
+    - [servoMotor](industrialNetwork/servoMotor/servoMotor.ino)
+    - [transmitterCAN](industrialNetwork/transmitterCAN/transmitterCAN.ino)
+    - [recieverCAN](industrialNetwork/recieverCAN/recieverCAN.ino)
+  - Gateway (PIC32MZ): [industrialNetwork/PIC32MZ/original.c](industrialNetwork/PIC32MZ/original.c)
+  - Host-side CAN IDS: [industrialNetwork/NIDS_CAN/main.py](industrialNetwork/NIDS_CAN/main.py)
+- Attacks
+  - CAN-bus attacks: [attacks/CANbus](attacks/CANbus/README.md)
+  - Adversarial ANPR: [attacks/adversarialANPR](attacks/adversarialANPR/README.md)
+- Tests and utilities: [tests](tests/README.md)
 
-- Device firmware and utility sketches in [industrialNetwork](industrialNetwork/README.md) implement periodic sensing and actuation with simple CAN message formats.
-- The host-side IDS at [industrialNetwork/NIDS_CAN/main.py](industrialNetwork/NIDS_CAN/main.py) ingests CAN frames via `python-can`, learns a baseline, and detects anomalies:
-	- Unknown IDs, DLC mismatches
-	- Payload/range deviations for configured sensors
-	- Rate-based DoS/flooding
-	- Payload pattern deviation
-- Outputs: SQLite `can_ids.db` (messages, anomalies), console logs, `intrusions.log`, and optional MQTT alerts.
+## Intrusion Detection System (IDS)
 
-Key tunables: `window_size`, `frequency_threshold`, `anomaly_threshold`, and `sensor_ranges` mappings (see the IDS source).
+The host-side IDS ingests CAN frames via `python-can`, learns a baseline, and detects anomalies. It supports:
 
-### Attacks
+- Unknown/invalid IDs and DLC mismatches
+- Payload/range deviations for configured sensors
+- Rate-based DoS/flooding detection
+- Payload pattern deviation
 
-- ANPR adversarial (vision): see [attacks/adversarialANPR/README.md](attacks/adversarialANPR/README.md) for full documentation on the three attacks implemented:
-	- Detection DoS via bounded perturbations
-	- Targeted region transfer
-	- Imperceptible OCR manipulation
+Outputs: SQLite `can_ids.db` (messages, anomalies), console logs, `intrusions.log`, and optional MQTT alerts.
 
-- CAN bus attacks: see [attacks/CANbus](attacks/CANbus/README.md) for a Python CLI using `python-can` full attack implementations. The attacks considered for our research are:
+Key tunables (see the IDS source): `window_size`, `frequency_threshold`, `anomaly_threshold`, and `sensor_ranges` mapping.
 
-	- Flood (DoS) with configurable ID/rate/payload
+## Attacks
 
-	<img src="figures/DoS_AdversarialCAN_SecCPS_Arquitecture.drawio.png" alt="DoS Attack simulation in CAN bus" width="800">
+We provide two complementary attack suites to stress the system and the IDS.
 
-	- Sensor Data Injection
+1) CAN-bus Attacks (CLI, `python-can`) — see [attacks/CANbus](attacks/CANbus/README.md)
 
-	<img src="figures/SensorDataInjection_AdversarialCAN_SecCPS_Arquitecture.drawio.png" alt="Sensor data injection attack in CAN bus" width="800">
+- Flood (DoS) with configurable ID/rate/payload
 
-	- Command spoofing attack
-	
-	<img src="figures/CommandSpoofing_AdversarialCAN_SecCPS_Arquitecture.drawio.png" alt="Command spoofing attack in CAN bus" width="800">
+<img src="figures/DoS_AdversarialCAN_SecCPS_Arquitecture.drawio.png" alt="DoS Attack simulation in CAN bus" width="800">
 
+- Sensor Data Injection
 
-## CAN Message Specification (Summary)
+<img src="figures/SensorDataInjection_AdversarialCAN_SecCPS_Arquitecture.drawio.png" alt="Sensor data injection attack in CAN bus" width="800">
 
-Device-level message formats are defined in [industrialNetwork/README.md](industrialNetwork/README.md). Example for temperature:
+- Command Spoofing
+
+<img src="figures/CommandSpoofing_AdversarialCAN_SecCPS_Arquitecture.drawio.png" alt="Command spoofing attack in CAN bus" width="800">
+
+2) Adversarial ANPR (vision) — see [attacks/adversarialANPR/README.md](attacks/adversarialANPR/README.md)
+
+- Detection denial via bounded perturbations
+- Targeted region transfer
+- Imperceptible OCR manipulation
+
+## CAN Message Summary
+
+Device-level formats are defined in [industrialNetwork/README.md](industrialNetwork/README.md). Example (temperature):
 
 - ID range: 0x400–0x500
 - Payload: 2 bytes, big-endian; value scaled as `°C × 100`
 - Example: 85.31°C → 8531 → 0x2152 (MSB=0x21, LSB=0x52)
 - Example frame: `423#022152` for ID 0x423
 
-Similar conventions apply to air quality, gas, and ultrasonic occupancy. The barrier (servo) periodically reports state via ID+state.
+Similar conventions apply to air quality, gas, and ultrasonic occupancy. The barrier (servo) periodically reports state.
 
-Note: The IDS currently validates coarse ranges; if using multi-byte encodings, extend parsing logic accordingly (see `_detect_anomalies` in the IDS).
+Note: The IDS currently validates coarse ranges; if you deploy multi-byte encodings, extend parsing accordingly (see `_detect_anomalies`).
 
 ## Quick Start
 
 ### 1) Python Environment
 
-Install core packages for IDS and CAN tooling:
+Install core packages for the IDS and CAN tooling:
 
 ```bash
 pip install python-can numpy paho-mqtt
 ```
 
-For ANPR experiments, install notebook requirements (see the ANPR README for details):
+For ANPR experiments (notebooks), install:
 
 ```bash
 pip install -r attacks/adversarialANPR/requirements.txt
@@ -123,7 +112,7 @@ sudo ip link add dev vcan0 type vcan
 sudo ip link set up vcan0
 ```
 
-- Windows: Use vendor tools to configure adapter/channel (e.g., PCAN `PCAN_USBBUS1`, Kvaser channel `0`).
+- Windows: Configure your adapter/channel via vendor tools (e.g., PCAN `PCAN_USBBUS1`, Kvaser channel `0`).
 
 ### 3) Run the IDS
 
@@ -131,7 +120,7 @@ sudo ip link set up vcan0
 python industrialNetwork/NIDS_CAN/main.py
 ```
 
-Tune the channel and adapter in the code if not using SocketCAN. For `vcan0`, adjust the constructor accordingly.
+Adjust the CAN interface configuration in the code (e.g., `vcan0`, PCAN, Kvaser) as needed.
 
 ### 4) Launch CAN Attacks
 
@@ -141,22 +130,22 @@ python attacks/CANbus/can_attacks.py --help
 
 # Flood at 5k fps for 10s (SocketCAN)
 python attacks/CANbus/can_attacks.py flood --bus-type socketcan --channel can0 \
-	--id 0x123 --dlc 8 --payload-mode random --rate 5000 --duration 10
+  --id 0x123 --dlc 8 --payload-mode random --rate 5000 --duration 10
 
 # Fuzz across standard ID space
 python attacks/CANbus/can_attacks.py fuzz --bus-type socketcan --channel can0 \
-	--id-range 0x000-0x7FF --min-dlc 0 --max-dlc 8 --payload-mode random --rate 500 --duration 30
+  --id-range 0x000-0x7FF --min-dlc 0 --max-dlc 8 --payload-mode random --rate 500 --duration 30
 
 # Spoof with fixed payload every 20ms (Windows/Kvaser example)
 python attacks/CANbus/can_attacks.py spoof --bus-type kvaser --channel 0 \
-	--id 0x321 --dlc 8 --payload 01,02,03,04,05,06,07,08 --period 0.02 --duration 10
+  --id 0x321 --dlc 8 --payload 01,02,03,04,05,06,07,08 --period 0.02 --duration 10
 
 # Replay from CSV with timestamp preservation
 python attacks/CANbus/can_attacks.py replay --bus-type socketcan --channel can0 \
-	--input path/to/log.csv --preserve-timestamps
+  --input path/to/log.csv --preserve-timestamps
 ```
 
-### 5) Run ANPR Adversarial Experiments
+### 5) Run ANPR Experiments
 
 See [attacks/adversarialANPR/README.md](attacks/adversarialANPR/README.md) for full steps. In short:
 
@@ -168,9 +157,9 @@ code attacks/adversarialANPR/adversarial_ANPR.ipynb
 
 ## Data, Logs, and Metrics
 
-- IDS writes SQLite `can_ids.db` with `messages` and `anomalies` tables and logs to `intrusions.log`.
-- CAN attack CLI logs all transmitted frames to CSV (path configurable with `--log`).
-- ANPR notebook saves visualizations and quantitative summaries for each attack.
+- IDS: SQLite `can_ids.db` (tables: `messages`, `anomalies`), `intrusions.log`, optional MQTT alerts
+- CAN attack CLI: CSV log of transmitted frames (configurable via `--log`)
+- ANPR: saved visualizations and quantitative summaries per attack
 
 Example anomaly query (Linux):
 
@@ -178,13 +167,18 @@ Example anomaly query (Linux):
 sqlite3 can_ids.db "SELECT datetime(timestamp,'unixepoch'), can_id, anomaly_type FROM anomalies ORDER BY timestamp DESC LIMIT 10;"
 ```
 
-## Tests
+## Hardware & Interfaces
 
-See [tests/README.md](tests/README.md) for MQTT and integration utilities, including:
+- CAN transceivers/shields for Arduino-compatible boards
+- PIC32MZ gateway (see [industrialNetwork/PIC32MZ/original.c](industrialNetwork/PIC32MZ/original.c))
+- Host CAN adapter
+  - Linux: SocketCAN-compatible (e.g., USB–CAN) on `can0`/`vcan0`
+  - Windows: Vendor adapters (Peak PCAN, Kvaser) via `python-can`
 
-- `test_mqtt_send.py` and `test_mqtt_rec.py` for broker interaction and YOLO API checks.
-- `send_over_serial.py` for serial-based checks.
-- Additional scenarios for end-to-end validation and troubleshooting.
+## How to Cite
+
+If this repository contributes to your research, please cite the accompanying paper referenced in your manuscript. We will add BibTeX here once the final citation/DOI is public. In the meantime, you can reference this repository URL and the paper as listed in your bibliography.
+
 
 ## Ethics and Safe Use
 
